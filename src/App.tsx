@@ -14,6 +14,7 @@ import Audits from "./pages/Audits";
 import NewAudit from "./pages/NewAudit";
 import Documents from "./pages/Documents";
 import Organizations from "./pages/Organizations";
+import AdminPanel from "./pages/AdminPanel";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -69,6 +70,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Organizations />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <AdminPanel />
                   </ProtectedRoute>
                 }
               />

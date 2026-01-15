@@ -9,10 +9,12 @@ import { useOrganization } from '@/lib/organization';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Building2, Users, Loader2, Check } from 'lucide-react';
+import { MemberManagement } from '@/components/admin/MemberManagement';
+import { Plus, Building2, Users, Loader2, Check, ChevronRight, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Organizations() {
-  const { organizations, currentOrg, setCurrentOrg, refreshOrganizations } = useOrganization();
+  const { organizations, currentOrg, setCurrentOrg, refreshOrganizations, currentMembership } = useOrganization();
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -20,6 +22,7 @@ export default function Organizations() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [showMembers, setShowMembers] = useState(false);
 
   useEffect(() => {
     const checkSuperAdmin = async () => {
@@ -87,6 +90,8 @@ export default function Organizations() {
     setLoading(false);
   };
 
+  const isCurrentOrgAdmin = currentMembership?.role === 'admin' || isSuperAdmin;
+
   return (
     <AppLayout>
       <div className="px-4 space-y-4">
@@ -96,47 +101,57 @@ export default function Organizations() {
             <h1 className="text-xl font-display font-bold text-foreground">Organizaciones</h1>
             <p className="text-sm text-muted-foreground">{organizations.length} organizaciones</p>
           </div>
-          {isSuperAdmin && (
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="h-9 gradient-primary text-primary-foreground">
-                  <Plus className="h-4 w-4 mr-1" />
-                  Nueva
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle className="font-display">Nueva Organización</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleCreateOrg} className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="orgName">Nombre de la organización</Label>
-                    <Input
-                      id="orgName"
-                      placeholder="Ej: Mi Empresa S.A."
-                      value={newOrgName}
-                      onChange={(e) => setNewOrgName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full gradient-primary text-primary-foreground"
-                    disabled={loading || !newOrgName.trim()}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creando...
-                      </>
-                    ) : (
-                      'Crear Organización'
-                    )}
+          <div className="flex gap-2">
+            {isSuperAdmin && (
+              <>
+                <Link to="/admin">
+                  <Button size="sm" variant="outline" className="h-9">
+                    <ShieldCheck className="h-4 w-4 mr-1" />
+                    Admin
                   </Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-          )}
+                </Link>
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="h-9 gradient-primary text-primary-foreground">
+                      <Plus className="h-4 w-4 mr-1" />
+                      Nueva
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="font-display">Nueva Organización</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleCreateOrg} className="space-y-4 mt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="orgName">Nombre de la organización</Label>
+                        <Input
+                          id="orgName"
+                          placeholder="Ej: Mi Empresa S.A."
+                          value={newOrgName}
+                          onChange={(e) => setNewOrgName(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        className="w-full gradient-primary text-primary-foreground"
+                        disabled={loading || !newOrgName.trim()}
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Creando...
+                          </>
+                        ) : (
+                          'Crear Organización'
+                        )}
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Organizations List */}
@@ -160,7 +175,14 @@ export default function Organizations() {
                     ? 'ring-2 ring-accent' 
                     : 'hover:shadow-elevated'
                 }`}
-                onClick={() => setCurrentOrg(org)}
+                onClick={() => {
+                  setCurrentOrg(org);
+                  if (currentOrg?.id === org.id) {
+                    setShowMembers(!showMembers);
+                  } else {
+                    setShowMembers(true);
+                  }
+                }}
               >
                 <CardContent className="p-4 flex items-center gap-4">
                   <div className="p-3 rounded-xl bg-primary/10">
@@ -172,17 +194,30 @@ export default function Organizations() {
                     </p>
                     <p className="text-sm text-muted-foreground flex items-center gap-1">
                       <Users className="h-3.5 w-3.5" />
-                      Miembro
+                      {currentOrg?.id === org.id && currentMembership?.role === 'admin' ? 'Administrador' : 'Miembro'}
                     </p>
                   </div>
-                  {currentOrg?.id === org.id && (
+                  {currentOrg?.id === org.id ? (
                     <div className="p-1.5 rounded-full bg-accent">
                       <Check className="h-4 w-4 text-accent-foreground" />
                     </div>
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
                   )}
                 </CardContent>
               </Card>
             ))}
+          </div>
+        )}
+
+        {/* Member Management for current org */}
+        {currentOrg && showMembers && (
+          <div className="mt-4">
+            <MemberManagement
+              orgId={currentOrg.id}
+              orgName={currentOrg.name}
+              isAdmin={isCurrentOrgAdmin}
+            />
           </div>
         )}
 
