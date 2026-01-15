@@ -8,6 +8,7 @@ import { OrganizationProvider } from "@/lib/organization";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Setup from "./pages/Setup";
 import Dashboard from "./pages/Dashboard";
 import Audits from "./pages/Audits";
 import NewAudit from "./pages/NewAudit";
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/setup" element={<Setup />} />
               <Route
                 path="/dashboard"
                 element={
