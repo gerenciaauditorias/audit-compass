@@ -304,6 +304,7 @@ export type Database = {
         Args: { _org_id: string }
         Returns: Database["public"]["Enums"]["org_role"]
       }
+      has_any_super_admin: { Args: never; Returns: boolean }
       is_org_member: { Args: { _org_id: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
     }

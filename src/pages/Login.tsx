@@ -150,6 +150,13 @@ export default function Login() {
                 Registrarse
               </Link>
             </p>
+
+            <p className="text-center text-xs text-muted-foreground">
+              ¿Primera vez configurando?{' '}
+              <Link to="/setup" className="font-medium text-accent hover:underline">
+                Configurar Super Admin
+              </Link>
+            </p>
           </CardContent>
         </Card>
       </div>
